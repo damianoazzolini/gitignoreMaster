@@ -3,6 +3,8 @@
 wget=/usr/bin/wget
 unzip=/usr/bin/unzip
 cut=/usr/bin/cut
+awk=/usr/bin/awk
+sort=/usr/bin/sort
 
 rm=/bin/rm
 ls=/bin/ls
@@ -11,6 +13,7 @@ grep=/bin/grep
 cat=/bin/cat
 pwd=/bin/pwd
 sed=/bin/sed
+
 
 directory=/tmp #save /home/gitignoreMaster/
 
@@ -22,6 +25,8 @@ FILENAME="$directory/gitignore-master"
 REMOVEOPTIONS="-r -d" #remove directory and everything inside
 CUTOPTIONS="-d . -f 1"
 GREPOPTIONS="-i -w" #-i ignore case, -w match exact case
+GREPOPTIONSQUIET="-q -c"
+SORTOPTIONS="-u" #-u unique to remove duplicates on file
 NAME="gitignoreMaster"
 
 ############################################supportare più gitignore consecutivi
@@ -71,6 +76,13 @@ function moveUp {
 	$rm $REMOVEOPTIONS Global
 }
 
+#remove duplicated lines from file $1 file
+function removeDuplicatedLines {
+	#$awk '!a[$0]++' "$1" >/dev/null
+	#$sort $SORTOPTIONS "$1"
+	echo "I should remove duplicated lines form "$1""
+}
+
 #create .gitignore file
 function createGitignore {
 	#$1 path, $2 ignore
@@ -87,11 +99,25 @@ function createGitignore {
 	fi
 	echo "Insert gitignore for $2"
 	printIgnore "$2" >> "$place"
+
+	removeDuplicatedLines "$place"
+
+	#temporary
+	#temp=$( printIgnore "$2" )
+
+	#for word in $temp
+	#do
+	#	if [ "$grep $GREPOPTIONSQUIET $word $place" ]; then
+	#		echo "$word ignored beacause already exists";
+	#	else
+	#		echo $word >> "$place"
+	#	fi
+	#done
 }
 
 #unzip file
 function unzipfile {
-	if [[ ! -f "$UNZIPFILE" ]]; then
+	if [ ! -f "$UNZIPFILE" ]; then
 		echo "Problem, file not found"
 	else
 		$unzip ${UNZIPOPTIONS} ${UNZIPFILE}
@@ -101,7 +127,7 @@ function unzipfile {
 #diwnload file
 function downloadFile {
 	#echo "Check for updates"
-	if [[ ! -d "$FILENAME" ]]; then
+	if [ ! -d "$FILENAME" ]; then
 		#not downloaded .zip
 		if [ ! -d "$UNZIPFILE" ]; then
 			#echo "Updating library"
