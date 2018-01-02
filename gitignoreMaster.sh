@@ -46,13 +46,13 @@ function printHelp {
 
 #print ignore
 function printIgnore {
-	read res < <($ls $FILENAME | $cut $CUTOPTIONS | $grep $GREPOPTIONS $1)
+	read res < <($ls $FILENAME | $cut $CUTOPTIONS | $grep $GREPOPTIONS "$1")
 	echo "# $res"
-	if [ ! -z $res ]; then
+	if [ ! -z "$res" ]; then
 		read file1 < <(echo "${res^}")
 		gitign=.gitignore
 		file=$file1$gitign
-		$cat $FILENAME/$file
+		$cat $FILENAME/"$file"
 	else
 		echo "#Gitignore not available for $1"
 	fi
@@ -62,7 +62,7 @@ function printIgnore {
 function showAvailableGitignore {
 	#ls | cut -d '.' -f 1
 	echo "GITIGNORES AVAILABLE"
-	$ls $FILENAME | $cut $CUTOPTIONS
+	$ls $FILENAME | $cut "$CUTOPTIONS"
 }
 
 #move all files up a dir
@@ -75,7 +75,7 @@ function moveUp {
 function createGitignore {
 	#$1 path, $2 ignore
 	ign=.gitignore
-	if [ $1 == "here" ] || [ $1 == "h" ]; then
+	if [ "$1" == "here" ] || [ "$1" == "h" ]; then
 		read currentDir < <($pwd | $sed 's/ /\\ /g')
 		place=$currentDir/$ign
 	else
@@ -86,7 +86,7 @@ function createGitignore {
 		echo "Created .gitignore file"
 	fi
 	echo "Insert gitignore for $2"
-	printIgnore $2 >> "$place"
+	printIgnore "$2" >> "$place"
 }
 
 #unzip file
@@ -151,10 +151,8 @@ if [ "$#" -eq 0 ]; then
 	exit
 fi
 
-ignore=
 create=
 path=
-showfile=
 
 declare -a ARRAY
 i=0
@@ -187,7 +185,7 @@ done
 
 for (( j = 0; j < i; j++ )); do
 	if [ ${#ARRAY[@]} -ne 0 ]; then
-		if [ ! -z $create ] && [ ! -z $path ]; then
+		if [ ! -z "$create" ] && [ ! -z "$path" ]; then
 			createGitignore $path ${ARRAY[j]}
 		else
 			printIgnore ${ARRAY[j]}
