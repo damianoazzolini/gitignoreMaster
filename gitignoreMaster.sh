@@ -29,6 +29,14 @@ GREPOPTIONSQUIET="-q -c"
 SORTOPTIONS="-u" #-u unique to remove duplicates on file
 NAME="gitignoreMaster"
 
+####################################
+#more global var
+overwrite=
+create=
+path=
+show=
+filepath=
+
 ############################################supportare più gitignore consecutivi
 
 #print help
@@ -40,11 +48,13 @@ function printHelp {
 
 	COMMAND LIST:
 
-		-h | --help, 	show this help;
-		-l | --list,	show supported gitgnore files;
-		-d | --dir,	create the .gitignore file into the specified directory
+		-h | --help, 		show this help;
+		-l | --list,		show supported gitgnore files;
+		-d | --dir,		create the .gitignore file into the specified directory
 				-d here creates the file in the current directory;
-		-i | --ignore,	write on screen gitignore for selected language/tool;
+		-i | --ignore,		write on screen gitignore for selected language/tool;
+		-o | --overwrite,	remove duplicated lines from .gitignore file;
+		-s | --show,		show the .gitignore file;
 	"
 	exit
 }
@@ -67,7 +77,7 @@ function printIgnore {
 function showAvailableGitignore {
 	#ls | cut -d '.' -f 1
 	echo "GITIGNORES AVAILABLE"
-	$ls $FILENAME | $cut "$CUTOPTIONS"
+	$ls $FILENAME | $cut $CUTOPTIONS
 }
 
 #move all files up a dir
@@ -78,41 +88,24 @@ function moveUp {
 
 #remove duplicated lines from file $1 file
 function removeDuplicatedLines {
-	#$awk '!a[$0]++' "$1" >/dev/null
-	#$sort $SORTOPTIONS "$1"
-	echo "I should remove duplicated lines form "$1""
+	#$awk '!a[$0]++' "$1" > "$1"
+	tempval='a'
+	tempFile=$1$tempval
+	$awk '!a[$0]++' "$1" > "$tempFile"
+	mv "$tempFile" "$1"
 }
 
 #create .gitignore file
 function createGitignore {
-	#$1 path, $2 ignore
-	ign=.gitignore
-	if [ "$1" == "here" ] || [ "$1" == "h" ]; then
-		read currentDir < <($pwd | $sed 's/ /\\ /g')
-		place=$currentDir/$ign
-	else
-		place=$1/$ign
-	fi
-
-	if [ ! -f "$place" ]; then
+	if [ ! -f "$filepath" ]; then
 		echo "Created .gitignore file"
 	fi
 	echo "Insert gitignore for $2"
-	printIgnore "$2" >> "$place"
+	printIgnore "$2" >> "$filepath"
 
-	removeDuplicatedLines "$place"
-
-	#temporary
-	#temp=$( printIgnore "$2" )
-
-	#for word in $temp
-	#do
-	#	if [ "$grep $GREPOPTIONSQUIET $word $place" ]; then
-	#		echo "$word ignored beacause already exists";
-	#	else
-	#		echo $word >> "$place"
-	#	fi
-	#done
+	if [ ! -z "$overwrite" ] && [ ! -z "$create" ] ; then
+		removeDuplicatedLines "$filepath"
+	fi
 }
 
 #unzip file
@@ -177,10 +170,12 @@ if [ "$#" -eq 0 ]; then
 	exit
 fi
 
-create=
-path=
-
+#declare array
 declare -a ARRAY
+
+
+
+#index counter
 i=0
 
 #read parameters
@@ -194,13 +189,16 @@ while [ "$1" != "" ]; do
 			exit;;
 		-i | --ignore)
 			shift
-			#ignore=$1
 			ARRAY[$i]=$1
 			i=$(( $i + 1 ));;
 		-d | --dir)
 			shift
 			create="yes"
 			path=$1;;
+		-o | --overwrite)
+			overwrite=1;;
+		-s | --show)
+			show=1;;
 		*)
 			echo "$1 unknown parameter"
 			printHelp
@@ -209,6 +207,18 @@ while [ "$1" != "" ]; do
 	shift
 done
 
+#compute filepath
+if [ ! -z "$path" ] && [ ! -z "$create" ]; then
+	ign=.gitignore
+	if [ "$path" == "here" ] || [ "$path" == "h" ]; then
+		read currentDir < <($pwd | $sed 's/ /\\ /g')
+		filepath=$currentDir/$ign
+	else
+		filepath=$path/$ign
+	fi
+fi
+
+#creates ignore
 for (( j = 0; j < i; j++ )); do
 	if [ ${#ARRAY[@]} -ne 0 ]; then
 		if [ ! -z "$create" ] && [ ! -z "$path" ]; then
@@ -218,3 +228,8 @@ for (( j = 0; j < i; j++ )); do
 		fi
 	fi
 done
+
+#show file
+if [ ! -z "$show" ] && [ ! -z "$filepath" ]; then
+	cat "$filepath"
+fi

@@ -22,11 +22,13 @@ Add the program to the path to use it from everywhere.
 ## Commands Available
 
 ```
--h | --help, 	  show help;
--l | --list,	   show supported gitgnore files;
--d | --dir,	    create the .gitignore file into the specified directory,
+-h | --help,        show help;
+-l | --list,        show supported gitgnore files;
+-d | --dir,         create the .gitignore file into the specified directory,
         -d here / -d h to create the file in the current directory;
--i | --ignore,	 write on screen gitignore for selected language/tool;
+-i | --ignore,      write on screen gitignore for selected language/tool;
+-o | --overwrite,   remove duplicated lines from .gitignore file;
+-s | --show,		show the .gitignore file;
 ```
 
 ## Usage Examples
@@ -47,5 +49,9 @@ $ gitignoreMaster -i C -d here
 ```
 Create the `.gitignore` file with ignores for `C`, `Java` and `D` in `/temp/dir`
 ```
-$ gitignoreMaster.sh -i c++ -i java -i d -d /temp/dir/
+$ gitignoreMaster -i c++ -i java -i d -d /temp/dir/
+```
+Create the `.gitgnore` file in the current directory, for `C` and `Java`, remove duplicated lines and show it.
+```
+$ gitignoreMaster -i c -d here -i java -o -s
 ```
